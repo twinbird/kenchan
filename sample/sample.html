@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8">
+		<title>郵便番号検索サンプル</title>
+	</head>
+	<body>
+		<p>サンプルを試すには以下のコマンドで起動してください。</p>
+		<pre>ken_all.exe -a "*"</pre>
+		<input type="text" id="zipcode" name="zipcode" placeholder="郵便番号" autofocus>
+		<ul id="result">
+		</ul>
+	</body>
+
+<script>
+let displayUl = document.getElementById('result');
+let input = document.getElementById('zipcode');
+
+let clearResult = function() {
+	while (displayUl.firstChild) {
+		displayUl.removeChild(displayUl.firstChild);
+	}
+};
+
+let displayResult = function(result) {
+	clearResult();
+	result.forEach(function(v) {
+		let n = document.createElement('li');
+		n.textContent = v.zipCode + ":"
+						+ v.address1 + "-"
+						+ v.address2 + "-"
+						+ v.address3 + "("
+						+ v.kana1 + "-"
+						+ v.kana2 + "-"
+						+ v.kana3 + ")";
+		displayUl.appendChild(n);
+	});
+};
+
+let getAddressByZip = function(zipCode) {
+	let xhr = new XMLHttpRequest();
+	let url = `http://localhost:8080/search?q=${zipCode}`;
+	xhr.open("GET", url, true);
+	xhr.responseType = "json";
+
+	xhr.onload = function(e) {
+		switch (xhr.readyState) {
+		case 4:
+			if (xhr.status === 200) {
+				displayResult(xhr.response);
+			}
+			break;
+		}
+	};
+	xhr.onerror = function(e) {
+		console.error(xhr.statusText);
+	};
+	xhr.send(null);
+};
+
+input.addEventListener('input', function() {
+	getAddressByZip(input.value);
+});
+</script>
+</html>
+
